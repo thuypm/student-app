@@ -1,7 +1,8 @@
-var express = require("express");
+const express = require("express");
 const authService = require("../service/authService");
 const studentService = require("../service/studentService");
-var router = express.Router();
+const router = express.Router();
+const auth = require("../middleware/auth");
 
 router.get("/", function (req, res, next) {
   res.send("Hello world");
@@ -32,7 +33,7 @@ router.get("/search", async function (req, res, next) {
   }
 });
 
-router.post("/update", async function (req, res, next) {
+router.post("/update", auth.authorization, async function (req, res, next) {
   try {
     const data = await studentService.updateOneStudentOneWeek(req.body);
     res.status(200).json(data);

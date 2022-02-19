@@ -34,6 +34,12 @@ class AuthService {
       ),
     };
   }
+  checkUser(body) {
+    return (
+      body.username !== adminUser.username ||
+      body.password !== adminUser.password
+    );
+  }
 }
 
 module.exports = new AuthService();

@@ -1,11 +1,11 @@
-import jwt, { TokenExpiredError } from "jsonwebtoken";
-import createError from "http-errors";
-import { AuthService } from "../service/authService";
+const jwt = require("jsonwebtoken");
+const createError = require("http-errors");
+const AuthService = require("../service/authService");
 
-export const authorization = (roles) => async (req, res, next) => {
+const authorization = async (req, res, next) => {
   try {
     if (!req.headers || !req.headers.authorization) {
-      throw createError(403, `Unauthorized token!`);
+      throw createError(401, `Unauthorized token!`);
     }
 
     let token = req.headers.authorization;
@@ -25,9 +25,13 @@ export const authorization = (roles) => async (req, res, next) => {
     req.user = decode;
     next();
   } catch (error) {
-    if (error instanceof TokenExpiredError) {
+    if (error instanceof jwt.TokenExpiredError) {
       error.status = 401;
     }
-    next(error);
+    next(createError(401, "Unauthorized."));
   }
+};
+
+module.exports = {
+  authorization,
 };

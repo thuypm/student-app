@@ -76,6 +76,9 @@
         <div class="flex w-full mb-2 text-red-500">
           {{ error }}
         </div>
+        <div class="flex w-full mb-2 text-green-500">
+          {{ success }}
+        </div>
       </div>
       <div class="w-full overflow-x-auto" v-if="dataSource?true:false">
         <table class="w-full">
@@ -140,6 +143,7 @@
       data: {
         loading: false,
         error: null,
+        success: null,
         listAllStudent: ALL_STUDENTS,
         listAllWeek: ALL_WEEKS,
         allRow: WEEKDAY_COLUMNS,
@@ -195,9 +199,11 @@
             }, {
               ...this.generateRequestHeader()
             })
-            alert('Thành công')
+            this.success = "Đã update thành công"
+            setTimeout(()=> this.success = null, 2000)
         } catch (error) {
-          alert('Đã xảy ra lỗi, vui lòng thử lại sau')
+          localStorage.removeItem('token')
+          window.location.href = '/login'
         }
       }
     }});
