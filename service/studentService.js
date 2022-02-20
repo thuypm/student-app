@@ -43,6 +43,15 @@ class StudentService {
       throw error;
     }
   }
+
+  async getAllData() {
+    try {
+      const data = await this.model.find({});
+      return data;
+    } catch (error) {
+      throw error;
+    }
+  }
 }
 
 module.exports = new StudentService();

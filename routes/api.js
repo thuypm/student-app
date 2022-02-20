@@ -33,6 +33,17 @@ router.get("/search", async function (req, res, next) {
   }
 });
 
+router.get("/get-all", async function (req, res, next) {
+  try {
+    const data = await studentService.getAllData();
+    res.status(200).json(data);
+  } catch (error) {
+    res.status(400).json({
+      error: error,
+    });
+  }
+});
+
 router.post("/update", auth.authorization, async function (req, res, next) {
   try {
     const data = await studentService.updateOneStudentOneWeek(req.body);

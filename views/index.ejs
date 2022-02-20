@@ -1,11 +1,170 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title><%= title %></title>
-    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <% include lib.ejs %>
   </head>
+
   <body>
-    <h1><%= title %></h1>
-    <p>Welcome to <%= title %></p>
+    <div id="admin-app" class="px-8 py-4 w-full">
+      <form class="flex w-full items-end">
+        <div class="flex w-full items-end">
+          <div class="mb-4 mr-8">
+            <label
+              class="block text-gray-700 text-sm font-bold mb-2"
+              for="username"
+            >
+              Chọn học sinh
+            </label>
+            <select
+              class="w-56 form-select appearance-none block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding bg-no-repeat border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none"
+              aria-label="Chọn hs"
+              v-model="formData.studentId"
+              v-on:change="() => dataSource = null"
+            >
+              <option
+                v-for="student in listAllStudent"
+                :key="student.id"
+                :value="student.id"
+              >
+                {{ student.id + ". " + student.name }}
+              </option>
+            </select>
+          </div>
+          <div class="mb-4 mr-8">
+            <label
+              class="block text-gray-700 text-sm font-bold mb-2"
+              for="username"
+            >
+              Chọn tuần
+            </label>
+            <select
+              class="w-56 form-select appearance-none block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding bg-no-repeat border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none"
+              aria-label="Chọn hs"
+              v-model="formData.week"
+              v-on:change="() => dataSource = null"
+            >
+              <option
+                v-for="week in listAllWeek"
+                :key="week.id"
+                :value="week.id"
+              >
+                {{ week.name }}
+              </option>
+            </select>
+          </div>
+          <div class="mb-4">
+            <button
+              type="button"
+              class="bg-green-500 hover:bg-green-700 text-white font-bold py-1.5 px-4 rounded"
+              v-on:click="handleSearch"
+            >
+              Tra cứu
+            </button>
+          </div>
+        </div>
+      </form>
+      <div>
+        <div class="flex w-full mb-2 text-red-500">
+          {{ error }}
+        </div>
+        <div class="flex w-full mb-2 text-green-500">
+          {{ success }}
+        </div>
+      </div>
+      <div class="w-full overflow-x-auto" v-if="dataSource?true:false">
+        <table class="w-full">
+          <thead class="bg-gray-100 dark:bg-gray-700">
+            <tr>
+              <th
+                scope="col"
+                class="whitespace-nowrap py-2 px-4 text-xs font-medium text-left text-gray-700 uppercase dark:text-gray-400"
+              >
+                Tiêu chí
+              </th>
+              <th
+                scope="col"
+                class="whitespace-nowrap py-2 px-4 text-xs font-medium text-left text-gray-700 uppercase dark:text-gray-400"
+              >
+                Điểm
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Product 1 -->
+            <tr
+              class="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
+              v-for="(eval, idRow) in evaluateColums"
+              :key="eval.value"
+              :class="idRow % 2 ? 'bg-gray-50' : '  bg-white'"
+            >
+              <td
+                class="py-2 px-4 text-sm font-medium text-gray-900 whitespace-nowrap dark:text-white"
+              >
+                {{ eval.label }}
+              </td>
+              <td
+                class="py-2 px-4 text-sm font-medium text-gray-900 whitespace-nowrap dark:text-white"
+              >
+                <div>
+                  {{ dataSource.point[idRow] }}
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </body>
+  <script>
+    const API_PATH = "<%= process.env.API_PATH %>";
+    const ALL_STUDENTS = <%- JSON.stringify(ALL_STUDENTS) %>;
+    const ALL_WEEKS = <%- JSON.stringify(ALL_WEEKS) %>;
+    const EVALUATE_COLUMNS =  <%- JSON.stringify(EVALUATE_COLUMNS) %>;
+    var app = new Vue({
+      el: "#admin-app",
+      data: {
+        loading: false,
+        error: null,
+        success: null,
+        listAllStudent: ALL_STUDENTS,
+        listAllWeek: ALL_WEEKS,
+        evaluateColums: EVALUATE_COLUMNS,
+        formData: {
+          studentId: null,
+          week: null,
+        },
+        dataSource: null,
+
+      },
+
+      methods: {
+      generateRequestHeader(customHeader = null) {
+        return {
+          headers: {
+              'Content-Type': 'application/json',
+              Authorization: 'Bearer ' + localStorage.getItem('token'),
+          },
+         }
+      },
+      async  handleSearch (){
+        this.error = null;
+        if(!this.formData.studentId || !this.formData.week)
+        {
+               this.error ="Chọn học sinh & tuần để tra cứu"
+               return;
+        }
+        try {
+          const res = await axios.get(API_PATH + 'search',{
+            params: {
+            ...this.formData
+            }})
+            this.dataSource= res.data;
+
+        } catch (error) {
+            this.dataSource = null;
+        }
+      }
+
+    }});
+  </script>
 </html>

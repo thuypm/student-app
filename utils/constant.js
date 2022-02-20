@@ -90,6 +90,10 @@ const CONSTANT = {
       label: "Điểm trừ theo đơn vị trường",
       value: 14,
     },
+    {
+      label: "Đi muộn, vắng ko phép ",
+      value: 15,
+    },
   ],
   ALL_STUDENTS: [
     {

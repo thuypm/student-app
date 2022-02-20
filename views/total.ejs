@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <% include lib.ejs %>
+  </head>
+
+  <body>
+    <div id="view-all-app" class="px-8 py-4 w-full">
+      <div class="w-full overflow-x-auto" v-if="dataSource?true:false">
+        <table class="w-full">
+          <thead class="bg-gray-100 dark:bg-gray-700">
+            <tr>
+              <th
+                scope="col"
+                class="whitespace-nowrap py-2 px-4 text-xs font-medium text-left text-gray-700 uppercase dark:text-gray-400"
+              >
+                Tiêu chí
+              </th>
+              <th
+                scope="col"
+                class="whitespace-nowrap py-2 px-4 text-xs font-medium text-left text-gray-700 uppercase dark:text-gray-400"
+                v-for="eval in evaluateColums"
+                :key="eval.value"
+              >
+                {{ eval.label }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Product 1 -->
+            <tr
+              class="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
+              v-for="(student, idRow) in listAllStudent"
+              :key="student.id"
+              :class="idRow % 2 ? 'bg-gray-50' : '  bg-white'"
+            >
+              <td
+                class="py-2 px-4 text-sm font-medium text-gray-900 whitespace-nowrap dark:text-white"
+              >
+                {{ student.name }}
+              </td>
+              <td
+                class="py-2 px-4 text-sm font-medium text-gray-900 whitespace-nowrap dark:text-white"
+                v-for="(eval, idCol) in evaluateColums"
+                :key="eval.value"
+              >
+                <div>
+                  {{ dataSource[idRow][idCol] }}
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </body>
+
+  <script>
+    const API_PATH = "<%= process.env.API_PATH %>";
+    const ALL_STUDENTS = <%- JSON.stringify(ALL_STUDENTS) %>;
+    const ALL_WEEKS = <%- JSON.stringify(ALL_WEEKS) %>;
+    const EVALUATE_COLUMNS =  <%- JSON.stringify(EVALUATE_COLUMNS) %>;
+    var app = new Vue({
+      el: "#view-all-app",
+      data: {
+        loading: false,
+        error: null,
+        success: null,
+        listAllStudent: ALL_STUDENTS,
+        listAllWeek: ALL_WEEKS,
+        evaluateColums: [...EVALUATE_COLUMNS, {
+          label: "Tổng",
+          value: '17'
+        }],
+        formData: {
+          studentId: null,
+          week: null,
+        },
+        dataSource: null,
+
+      },
+      async created(){
+              await this.handleGetAllDetail();
+          },
+      methods: {
+      generateRequestHeader(customHeader = null) {
+        return {
+          headers: {
+              'Content-Type': 'application/json',
+              Authorization: 'Bearer ' + localStorage.getItem('token'),
+          },
+         }
+      },
+      async  handleGetAllDetail (){
+        try {
+          const res = await axios.get(API_PATH + 'get-all',null);
+          let dataSource = [];
+          ALL_STUDENTS.forEach(student=>{
+            let pushObject = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+            let studentPointArray = res.data.filter(point => Number(point.studentId) === Number(student.id));
+          let total = 0;
+                studentPointArray?.forEach(eval =>{
+                  eval.point.forEach((point, idPoint)=>{
+                    pushObject[idPoint] += point;
+                    total += point;
+                  })
+                })
+                pushObject[pushObject.length - 1] = total;
+              dataSource.push(pushObject);
+          })
+          this.dataSource = dataSource
+        } catch (error) {
+            this.dataSource = null;
+        }
+      }
+
+    }});
+  </script>
+</html>
